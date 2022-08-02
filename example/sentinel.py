@@ -13,18 +13,18 @@ class CodisSentinel(Process):
         self.config = self._open_config(port)
         self.port = port
 
-        self.logfile = "sentinel-{}.log".format(port)
-        self.command = "codis-server {} --sentinel".format(self.config)
+        self.logfile = f"sentinel-{port}.log"
+        self.command = f"codis-server {self.config} --sentinel"
         Process.__init__(self, self.command, self.logfile)
 
         dict = {"port": port, "pid": self.proc.pid}
-        print("    >> codis.sentinel = " + json.dumps(dict, sort_keys=True))
+        print(f"    >> codis.sentinel = {json.dumps(dict, sort_keys=True)}")
 
     @staticmethod
     def _open_config(port):
-        config = 'sentinel-{}.conf'.format(port)
+        config = f'sentinel-{port}.conf'
         with open(config, "w+") as f:
-            f.write('port {}'.format(port))
+            f.write(f'port {port}')
         return config
 
 
@@ -32,9 +32,7 @@ if __name__ == "__main__":
     children = []
     atexit.register(kill_all, children)
 
-    for port in range(26380, 26385):
-        children.append(CodisSentinel(port))
-
+    children.extend(CodisSentinel(port) for port in range(26380, 26385))
     check_alive(children, 3)
 
     while True:

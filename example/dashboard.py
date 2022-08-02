@@ -15,23 +15,23 @@ class CodisDashboard(Process):
         self.product_name = product_name
         self.product_auth = product_auth
 
-        self.logfile = "dashboard-{}.log".format(admin_port)
-        self.command = "codis-dashboard -c {}".format(self.config)
+        self.logfile = f"dashboard-{admin_port}.log"
+        self.command = f"codis-dashboard -c {self.config}"
         Process.__init__(self, self.command, self.logfile)
 
         dict = {"admin_port": admin_port, "pid": self.proc.pid}
-        print("    >> codis.dashboard = " + json.dumps(dict, sort_keys=True))
+        print(f"    >> codis.dashboard = {json.dumps(dict, sort_keys=True)}")
 
     @staticmethod
     def _open_config(admin_port, product_name, product_auth=None):
-        config = 'dashboard-{}.toml'.format(admin_port)
+        config = f'dashboard-{admin_port}.toml'
         with open(config, "w+") as f:
             f.write('coordinator_name = "filesystem"\n')
             f.write('coordinator_addr = "rootfs"\n')
-            f.write('product_name = "{}"\n'.format(product_name))
+            f.write(f'product_name = "{product_name}"\n')
             if product_auth is not None:
-                f.write('product_auth = "{}"\n'.format(product_auth))
-            f.write('admin_addr = ":{}"\n'.format(admin_port))
+                f.write(f'product_auth = "{product_auth}"\n')
+            f.write(f'admin_addr = ":{admin_port}"\n')
             f.write('migration_method = "semi-async"\n')
             f.write('migration_async_maxbulks = 200\n')
             f.write('migration_async_maxbytes = "32mb"\n')
@@ -42,8 +42,14 @@ class CodisDashboard(Process):
             f.write('sentinel_down_after = "5s"\n')
             f.write('sentinel_failover_timeout = "10m"\n')
             path = os.getcwd()
-            f.write('sentinel_notification_script = "{}"\n'.format(os.path.join(path, "sentinel_notify.sh")))
-            f.write('sentinel_client_reconfig_script = "{}"\n'.format(os.path.join(path, "sentinel_reconfig.sh")))
+            f.write(
+                f'sentinel_notification_script = "{os.path.join(path, "sentinel_notify.sh")}"\n'
+            )
+
+            f.write(
+                f'sentinel_client_reconfig_script = "{os.path.join(path, "sentinel_reconfig.sh")}"\n'
+            )
+
         return config
 
 

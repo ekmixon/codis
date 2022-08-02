@@ -14,7 +14,7 @@ class Process:
         try:
             self.proc = subprocess.Popen(self.command.split(), stderr=subprocess.STDOUT, stdout=self.logfile)
         except Exception:
-            print("run command failed: {}".format(self.command))
+            print(f"run command failed: {self.command}")
             raise
 
     def is_running(self):
@@ -47,7 +47,7 @@ def check_alive(children=[], seconds=0):
         time.sleep(seconds)
     for p in children:
         if not p.is_running():
-            message = "process lost - {}".format(p.command)
+            message = f"process lost - {p.command}"
             raise Exception(message)
 
 

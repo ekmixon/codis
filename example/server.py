@@ -13,25 +13,25 @@ class CodisServer(Process):
         self.config = self._open_config(port, master_port, requirepass)
         self.port = port
 
-        self.logfile = "redis-{}.log".format(port)
-        self.command = "codis-server {}".format(self.config)
+        self.logfile = f"redis-{port}.log"
+        self.command = f"codis-server {self.config}"
         Process.__init__(self, self.command, self.logfile)
 
         dict = {"port": port, "pid": self.proc.pid}
-        print("    >> codis.server = " + json.dumps(dict, sort_keys=True))
+        print(f"    >> codis.server = {json.dumps(dict, sort_keys=True)}")
 
     @staticmethod
     def _open_config(port, master_port=None, requirepass=None):
-        config = 'redis-{}.conf'.format(port)
+        config = f'redis-{port}.conf'
         with open(config, "w+") as f:
-            f.write('port {}\n'.format(port))
+            f.write(f'port {port}\n')
             f.write('save ""\n')
-            f.write('dbfilename "{}.rdb"\n'.format(port))
+            f.write(f'dbfilename "{port}.rdb"\n')
             if master_port is not None:
-                f.write('slaveof 127.0.0.1 {}\n'.format(master_port))
+                f.write(f'slaveof 127.0.0.1 {master_port}\n')
             if requirepass is not None:
-                f.write('masterauth {}\n'.format(requirepass))
-                f.write('requirepass {}\n'.format(requirepass))
+                f.write(f'masterauth {requirepass}\n')
+                f.write(f'requirepass {requirepass}\n')
             f.write('protected-mode no\n')
         return config
 

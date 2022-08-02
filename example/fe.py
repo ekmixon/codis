@@ -12,12 +12,13 @@ class CodisFE(Process):
     def __init__(self, port, assets):
         self.port = port
 
-        self.logfile = "fe-{}.log".format(port)
-        self.command = "codis-fe --filesystem rootfs --listen 0.0.0.0:{} --assets-dir={}".format(self.port, assets)
+        self.logfile = f"fe-{port}.log"
+        self.command = f"codis-fe --filesystem rootfs --listen 0.0.0.0:{self.port} --assets-dir={assets}"
+
         Process.__init__(self, self.command, self.logfile)
 
         dict = {"pid": self.proc.pid, "assets": assets}
-        print("    >> codis.fe = " + json.dumps(dict, sort_keys=True))
+        print(f"    >> codis.fe = {json.dumps(dict, sort_keys=True)}")
 
 
 if __name__ == "__main__":

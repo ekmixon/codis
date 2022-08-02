@@ -17,7 +17,7 @@ def generate(path, name, content):
     if path != "":
         os.makedirs(path, exist_ok=True)
     file = os.path.join(path, name)
-    print("Generate: {}".format(os.path.abspath(file)))
+    print(f"Generate: {os.path.abspath(file)}")
     with open(file, 'w+') as f:
         f.write(content)
 
@@ -82,26 +82,36 @@ class Dashboard():
         generate(base, "dashboard.toml", temp.format(**kwargs))
 
         temp = readfile(template_root, "dashboard.service.template")
-        generate(base, "codis_dashboard_{}.service".format(self.admin_port), temp.format(**kwargs))
+        generate(
+            base,
+            f"codis_dashboard_{self.admin_port}.service",
+            temp.format(**kwargs),
+        )
+
 
         admin = os.path.join(self.env.bin_path, "codis-admin")
-        generate_bash(base, "dashboard_admin", "{} --dashboard={} $@".format(admin, self.admin_addr))
+        generate_bash(
+            base, "dashboard_admin", f"{admin} --dashboard={self.admin_addr} $@"
+        )
+
 
         scripts = 'd=1\n'
         for p in proxylist:
-            scripts += "sleep $d; {} --dashboard={} --online-proxy --addr={}".format(admin, self.admin_addr, p.admin_addr)
+            scripts += f"sleep $d; {admin} --dashboard={self.admin_addr} --online-proxy --addr={p.admin_addr}"
+
             scripts += "\n"
         generate_bash(base, "foreach_proxy_online", scripts)
 
         scripts = 'd=1\n'
         for p in proxylist:
-            scripts += "sleep $d; {} --dashboard={} --reinit-proxy --addr={}".format(admin, self.admin_addr, p.admin_addr)
+            scripts += f"sleep $d; {admin} --dashboard={self.admin_addr} --reinit-proxy --addr={p.admin_addr}"
+
             scripts += "\n"
         generate_bash(base, "foreach_proxy_reinit", scripts)
 
         scripts = 'd=1\n'
         for p in proxylist:
-            scripts += "sleep $d; {} --proxy={} $@".format(admin, p.admin_addr)
+            scripts += f"sleep $d; {admin} --proxy={p.admin_addr} $@"
             scripts += "\n"
         generate_bash(base, "foreach_proxy", scripts)
 
@@ -163,10 +173,10 @@ class Proxy():
         generate(base, "proxy.toml", temp.format(**kwargs))
 
         temp = readfile(template_root, "proxy.service.template")
-        generate(base, "codis_proxy_{}.service".format(self.proxy_port), temp.format(**kwargs))
+        generate(base, f"codis_proxy_{self.proxy_port}.service", temp.format(**kwargs))
 
         admin = os.path.join(self.env.bin_path, "codis-admin")
-        generate_bash(base, "proxy_admin", "{} --proxy={} $@".format(admin, self.admin_addr))
+        generate_bash(base, "proxy_admin", f"{admin} --proxy={self.admin_addr} $@")
 
 
 class Env:
@@ -191,9 +201,11 @@ class Product:
         self.proxylist = []
         if "proxy" in config:
             template = Template(config.get("proxy", {}))
-            for p in config.get("instance", []):
-                self.proxylist.append(Proxy(self, template, p))
-        self.proxylist.sort(key=lambda p: p.datacenter + "|" + p.proxy_addr)
+            self.proxylist.extend(
+                Proxy(self, template, p) for p in config.get("instance", [])
+            )
+
+        self.proxylist.sort(key=lambda p: f"{p.datacenter}|{p.proxy_addr}")
 
     def render(self):
         self.dashboard.render(self.proxylist)

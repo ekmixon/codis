@@ -16,23 +16,23 @@ class CodisProxy(Process):
         self.product_name = product_name
         self.product_auth = product_auth
 
-        self.logfile = "proxy-{}.log".format(proxy_port)
-        self.command = "codis-proxy -c {} --filesystem rootfs".format(self.config)
+        self.logfile = f"proxy-{proxy_port}.log"
+        self.command = f"codis-proxy -c {self.config} --filesystem rootfs"
         Process.__init__(self, self.command, self.logfile)
 
         dict = {"admin_port": admin_port, "proxy_port": proxy_port, "pid": self.proc.pid}
-        print("    >> codis.proxy = " + json.dumps(dict, sort_keys=True))
+        print(f"    >> codis.proxy = {json.dumps(dict, sort_keys=True)}")
 
     @staticmethod
     def _open_config(admin_port, proxy_port, product_name, product_auth=None):
-        config = 'proxy-{}.toml'.format(proxy_port)
+        config = f'proxy-{proxy_port}.toml'
         with open(config, "w+") as f:
-            f.write('product_name = "{}"\n'.format(product_name))
+            f.write(f'product_name = "{product_name}"\n')
             if product_auth is not None:
-                f.write('product_auth = "{}"\n'.format(product_auth))
+                f.write(f'product_auth = "{product_auth}"\n')
             f.write('proto_type = "tcp4"\n')
-            f.write('admin_addr = ":{}"\n'.format(admin_port))
-            f.write('proxy_addr = ":{}"\n'.format(proxy_port))
+            f.write(f'admin_addr = ":{admin_port}"\n')
+            f.write(f'proxy_addr = ":{proxy_port}"\n')
             f.write('proxy_datacenter = "localhost"\n')
             f.write('proxy_heap_placeholder = "0"\n')
             f.write('proxy_max_offheap_size = "0"\n')
@@ -61,7 +61,7 @@ if __name__ == "__main__":
     product_name = "demo-test"
     product_auth = None
 
-    for i in range(0, 4):
+    for i in range(4):
         CodisProxy(11080+i, 19000+i, product_name, product_auth)
 
     check_alive(children, 3)

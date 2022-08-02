@@ -9,11 +9,11 @@ servers = [
     "127.0.0.1:16382",
 ]
 
-mappings = [x % len(servers) for x in range(0, 1024)]
+mappings = [x % len(servers) for x in range(1024)]
 mappings.sort()
 
 slots = []
-for i in range(0, len(mappings)):
+for i in range(len(mappings)):
     g = mappings[i]
     slots.append({'id': i, 'backend_addr': servers[g]})
 
